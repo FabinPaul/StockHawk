@@ -28,8 +28,16 @@
 
     <string name="error_no_network">No network connectivity! Will load stock cursor when the network is available.</string>
     <string name="error_no_stocks">No stocks added! Hit the floating action button to add one.</string>
+    <string name="error_server_down">The server is currently unavailable (because it is overloaded or down for maintenance)</string>
 
     <string name="toast_stock_added_no_connectivity">Symbol %s added. Will refresh when network available.</string>
     <string name="toast_no_connectivity">Will refresh when network available.</string>
+    <string name="snackbar_retry">RETRY</string>
+    <string name="sync_status_key">sync_status_key</string>
+    <string name="sync_timestamp">sync_timestamp</string>
+    <string name="toast_stock_outdated">Stock displayed is outdated. Please refresh</string>
+    <string name="refresh">REFRESH</string>
+    <string name="toast_invalid_stock_symbol">Invalid stock symbol %s</string>
+    <string name="toast_edit">EDIT</string>
 
 </resources>

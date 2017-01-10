@@ -1,10 +1,14 @@
 package com.udacity.stockhawk.ui;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.database.Cursor;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
@@ -13,11 +17,11 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.helper.ItemTouchHelper;
+import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.udacity.stockhawk.R;
 import com.udacity.stockhawk.data.Contract;
@@ -28,11 +32,14 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import timber.log.Timber;
 
+import static com.udacity.stockhawk.sync.QuoteSyncJob.SYNC_EXTRA_STOCK_NAME;
+
 public class MainActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor>,
         SwipeRefreshLayout.OnRefreshListener,
         StockAdapter.StockAdapterOnClickHandler {
 
     private static final int STOCK_LOADER = 0;
+    public static final String STOCK_DIALOG_FRAGMENT = "StockDialogFragment";
     @SuppressWarnings("WeakerAccess")
     @BindView(R.id.recycler_view)
     RecyclerView stockRecyclerView;
@@ -43,6 +50,26 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     @BindView(R.id.error)
     TextView error;
     private StockAdapter adapter;
+
+    private BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            final String symbol = intent.getStringExtra(SYNC_EXTRA_STOCK_NAME);
+            if (!TextUtils.isEmpty(symbol)) {
+                PrefUtils.removeStock(context, symbol);
+                if (error != null) {
+                    Snackbar.make(stockRecyclerView, context.getString(R.string.toast_invalid_stock_symbol, symbol), Snackbar.LENGTH_LONG)
+                            .setAction(R.string.toast_edit, new View.OnClickListener() {
+                                @Override
+                                public void onClick(View v) {
+                                    AddStockDialog.newInstance(symbol).show(getFragmentManager(), STOCK_DIALOG_FRAGMENT);
+                                }
+                            })
+                            .show();
+                }
+            }
+        }
+    };
 
     @Override
     public void onClick(String symbol) {
@@ -62,6 +89,16 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
         swipeRefreshLayout.setOnRefreshListener(this);
         swipeRefreshLayout.setRefreshing(true);
+        if (QuoteSyncJob.isStockOutDated(this)) {
+            swipeRefreshLayout.setRefreshing(false);
+            Snackbar.make(stockRecyclerView, R.string.toast_stock_outdated, Snackbar.LENGTH_LONG)
+                    .setAction(R.string.refresh, new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            onRefresh();
+                        }
+                    }).show();
+        }
         onRefresh();
 
         QuoteSyncJob.initialize(this);
@@ -92,17 +129,42 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     }
 
     @Override
+    protected void onStart() {
+        super.onStart();
+        registerReceiver(mBroadcastReceiver, new IntentFilter(QuoteSyncJob.ACTION_DATA_SYNC_FAILED));
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        try {
+            unregisterReceiver(mBroadcastReceiver);
+        } catch (IllegalArgumentException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    @Override
     public void onRefresh() {
 
         QuoteSyncJob.syncImmediately(this);
-
         if (!networkUp() && adapter.getItemCount() == 0) {
             swipeRefreshLayout.setRefreshing(false);
             error.setText(getString(R.string.error_no_network));
             error.setVisibility(View.VISIBLE);
         } else if (!networkUp()) {
             swipeRefreshLayout.setRefreshing(false);
-            Toast.makeText(this, R.string.toast_no_connectivity, Toast.LENGTH_LONG).show();
+            Snackbar.make(stockRecyclerView, R.string.toast_no_connectivity, Snackbar.LENGTH_LONG)
+                    .setAction(R.string.snackbar_retry, new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            QuoteSyncJob.syncImmediately(MainActivity.this);
+                        }
+                    }).show();
+        } else if (QuoteSyncJob.getSyncStatus(this) == QuoteSyncJob.SYNC_STATUS_SERVER_DOWN) {
+            swipeRefreshLayout.setRefreshing(false);
+            error.setText(getString(R.string.error_server_down));
         } else if (PrefUtils.getStocks(this).size() == 0) {
             swipeRefreshLayout.setRefreshing(false);
             error.setText(getString(R.string.error_no_stocks));
@@ -113,7 +175,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     }
 
     public void button(@SuppressWarnings("UnusedParameters") View view) {
-        new AddStockDialog().show(getFragmentManager(), "StockDialogFragment");
+        new AddStockDialog().show(getFragmentManager(), STOCK_DIALOG_FRAGMENT);
     }
 
     void addStock(String symbol) {
@@ -123,7 +185,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                 swipeRefreshLayout.setRefreshing(true);
             } else {
                 String message = getString(R.string.toast_stock_added_no_connectivity, symbol);
-                Toast.makeText(this, message, Toast.LENGTH_LONG).show();
+                Snackbar.make(stockRecyclerView, message, Snackbar.LENGTH_LONG).show();
             }
 
             PrefUtils.addStock(this, symbol);
