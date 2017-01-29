@@ -40,7 +40,7 @@
     <string name="toast_invalid_stock_symbol">Invalid stock symbol %s</string>
     <string name="toast_edit">EDIT</string>
 
-    
+
     <string name="content_description_add_stock" translatable="false">Add a stock item to track</string>
 
 </resources>
