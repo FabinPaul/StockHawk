@@ -1,48 +1,130 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<android.support.v7.widget.CardView
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="?android:attr/listPreferredItemHeight"
-    android:gravity="center_vertical"
-    android:orientation="horizontal"
-    android:paddingLeft="16dp"
-    android:paddingRight="16dp"
-    android:paddingStart="16dp"
-    android:paddingEnd="16dp">
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="4dp"
+    android:layout_marginTop="4dp"
+    app:cardElevation="@dimen/quote_card_elevation"
+    app:cardPreventCornerOverlap="false">
 
-    <TextView
-        android:id="@+id/symbol"
-        style="@style/StockSymbolTextStyle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:gravity="start|center_vertical"
-        tools:text="GOOG" />
+    <GridLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="2"
+        android:columnCount="2"
+        android:paddingBottom="4dp"
+        android:paddingEnd="16dp"
+        android:paddingLeft="16dp"
+        android:paddingRight="16dp"
+        android:paddingStart="16dp"
+        android:paddingTop="4dp">
 
-    <LinearLayout
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:gravity="end">
+        <TextView
+            android:id="@+id/name"
+            style="@style/StockNameTextStyle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_columnWeight="1.2"
+            android:layout_gravity="fill"
+            android:ellipsize="end"
+            android:paddingStart="0dp"
+            android:gravity="start|center_vertical"
+            android:lines="1"
+            tools:text="Microsoft Corporation"/>
 
         <TextView
             android:id="@+id/price"
             style="@style/BidPriceTextStyle"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="10sp"
-            tools:text="1000.00" />
+            android:layout_columnWeight="0.8"
+            android:layout_gravity="fill"
+            android:layout_marginEnd="4sp"
+            android:gravity="end|center_vertical"
+            tools:text="$1000.00"/>
 
         <TextView
-            android:id="@+id/change"
-            style="@style/PercentChangeTextStyle"
+            android:id="@+id/symbol"
+            style="@style/StockSymbolTextStyle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_columnWeight="1.2"
+            android:layout_gravity="fill"
+            android:gravity="start|center_vertical"
+            tools:text="MSFT (NMS)"/>
+
+
+        <FrameLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_columnWeight="0.8"
+            android:layout_marginEnd="4sp"
+            android:layout_gravity="fill">
+
+            <TextView
+                android:id="@+id/change"
+                style="@style/PercentChangeTextStyle"
+                android:background="@drawable/percent_change_pill_green"
+                android:paddingEnd="3dp"
+                android:paddingLeft="3dp"
+                android:paddingRight="3dp"
+                android:paddingStart="3dp"
+                tools:text="100%"
+                android:layout_gravity="end|center_vertical"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+        </FrameLayout>
+
+    </GridLayout>
+
+    <!--<LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center_vertical"
+        android:paddingLeft="16dp"
+        android:paddingRight="16dp"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/symbol"
+            style="@style/StockSymbolTextStyle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="@drawable/percent_change_pill_green"
-            android:paddingLeft="3dp"
-            android:paddingRight="3dp"
-            android:paddingStart="3dp"
-            android:paddingEnd="3dp"
-            tools:text="100%" />
-    </LinearLayout>
-</LinearLayout>
+            android:gravity="start|center_vertical"
+            tools:text="GOOG"/>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="end">
+
+            <TextView
+                android:id="@+id/price"
+                style="@style/BidPriceTextStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="10sp"
+                tools:text="1000.00"/>
+
+            <TextView
+                android:id="@+id/change"
+                style="@style/PercentChangeTextStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/percent_change_pill_green"
+                android:paddingEnd="3dp"
+                android:paddingLeft="3dp"
+                android:paddingRight="3dp"
+                android:paddingStart="3dp"
+                tools:text="100%"/>
+        </LinearLayout>
+    </LinearLayout>-->
+
+</android.support.v7.widget.CardView>
+

@@ -16,6 +16,7 @@ import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.Toolbar;
 import android.support.v7.widget.helper.ItemTouchHelper;
 import android.text.TextUtils;
 import android.view.Menu;
@@ -49,6 +50,8 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     @SuppressWarnings("WeakerAccess")
     @BindView(R.id.error)
     TextView error;
+    @BindView(R.id.toolbar)
+    Toolbar toolbar;
     private StockAdapter adapter;
 
     private BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
@@ -89,6 +92,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
         swipeRefreshLayout.setOnRefreshListener(this);
         swipeRefreshLayout.setRefreshing(true);
+        setSupportActionBar(toolbar);
         if (QuoteSyncJob.isStockOutDated(this)) {
             swipeRefreshLayout.setRefreshing(false);
             Snackbar.make(stockRecyclerView, R.string.toast_stock_outdated, Snackbar.LENGTH_LONG)
