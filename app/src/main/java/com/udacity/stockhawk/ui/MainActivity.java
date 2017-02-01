@@ -77,6 +77,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     @Override
     public void onClick(String symbol) {
         Timber.d("Symbol clicked: %s", symbol);
+        DetailsActivity.startActivity(this, symbol);
     }
 
     @Override
@@ -93,7 +94,8 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         swipeRefreshLayout.setOnRefreshListener(this);
         swipeRefreshLayout.setRefreshing(true);
         setSupportActionBar(toolbar);
-        if (QuoteSyncJob.isStockOutDated(this)) {
+        onRefresh();
+        if (QuoteSyncJob.isStockOutDated(this) && !networkUp()) {
             swipeRefreshLayout.setRefreshing(false);
             Snackbar.make(stockRecyclerView, R.string.toast_stock_outdated, Snackbar.LENGTH_LONG)
                     .setAction(R.string.refresh, new View.OnClickListener() {
@@ -103,7 +105,6 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                         }
                     }).show();
         }
-        onRefresh();
 
         QuoteSyncJob.initialize(this);
         getSupportLoaderManager().initLoader(STOCK_LOADER, null, this);
@@ -116,9 +117,16 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
             @Override
             public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
-                String symbol = adapter.getSymbolAtPosition(viewHolder.getAdapterPosition());
+                final String symbol = adapter.getSymbolAtPosition(viewHolder.getAdapterPosition());
                 PrefUtils.removeStock(MainActivity.this, symbol);
                 getContentResolver().delete(Contract.Quote.makeUriForStock(symbol), null, null);
+                Snackbar.make(stockRecyclerView, getString(R.string.stock_removed, symbol), Snackbar.LENGTH_LONG)
+                        .setAction(R.string.toast_undo, new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                addStock(symbol);
+                            }
+                        }).show();
             }
         }).attachToRecyclerView(stockRecyclerView);
 

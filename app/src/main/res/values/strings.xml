@@ -39,8 +39,12 @@
     <string name="refresh">REFRESH</string>
     <string name="toast_invalid_stock_symbol">Invalid stock symbol %s</string>
     <string name="toast_edit">EDIT</string>
+    <string name="toast_undo">UNDO</string>
+    <string name="stock_removed">Stock item %s was removed</string>
 
 
     <string name="content_description_add_stock" translatable="false">Add a stock item to track</string>
+    <string name="title_activity_details">DetailsActivity</string>
+    <string name="action_settings">Settings</string>
 
 </resources>
