@@ -26,10 +26,10 @@
         app:cardElevation="@dimen/quote_card_elevation"
         android:layout_above="@+id/divider">
 
-        <com.jjoe64.graphview.GraphView
+        <com.github.mikephil.charting.charts.LineChart
             android:id="@+id/stock_graph"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"/>
+            android:layout_height="match_parent" />
     </android.support.v7.widget.CardView>
 
 

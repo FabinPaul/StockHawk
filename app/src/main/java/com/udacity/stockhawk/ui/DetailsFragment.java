@@ -12,14 +12,21 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.jjoe64.graphview.GraphView;
-import com.jjoe64.graphview.helper.DateAsXAxisLabelFormatter;
-import com.jjoe64.graphview.series.DataPoint;
-import com.jjoe64.graphview.series.PointsGraphSeries;
+import com.github.mikephil.charting.charts.LineChart;
+import com.github.mikephil.charting.components.AxisBase;
+import com.github.mikephil.charting.components.XAxis;
+import com.github.mikephil.charting.components.YAxis;
+import com.github.mikephil.charting.data.Entry;
+import com.github.mikephil.charting.data.LineData;
+import com.github.mikephil.charting.data.LineDataSet;
+import com.github.mikephil.charting.formatter.IAxisValueFormatter;
 import com.udacity.stockhawk.R;
 import com.udacity.stockhawk.data.Contract;
 
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.concurrent.TimeUnit;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -33,7 +40,7 @@ public class DetailsFragment extends Fragment implements LoaderManager.LoaderCal
     private Unbinder mUnbinder;
 
     @BindView(R.id.stock_graph)
-    GraphView mGraphView;
+    LineChart mGraphView;
 
     public static DetailsFragment newInstance(String pSymbol) {
         DetailsFragment fragment = new DetailsFragment();
@@ -101,46 +108,60 @@ public class DetailsFragment extends Fragment implements LoaderManager.LoaderCal
         if (data != null && data.moveToFirst()) {
             String historyItems = data.getString(Contract.Quote.POSITION_HISTORY);
             String[] listOfHistoryItems = historyItems.split("\\n");
-            DataPoint[] dataPoints = new DataPoint[listOfHistoryItems.length];
+//            DataPoint[] dataPoints = new DataPoint[listOfHistoryItems.length];
+            ArrayList<Entry> dataPoints = new ArrayList<Entry>();
             Date minDate = null, maxDate = null;
             float minValue = Float.MAX_VALUE, maxValue = Float.MIN_VALUE;
             for (int i = 0; i < listOfHistoryItems.length; i++) {
                 String partsOfItem[] = listOfHistoryItems[i].split(", ");
                 long timeStamp = Long.parseLong(partsOfItem[0]);
-                Date date = new Date(timeStamp);
-                if (i == 0)
-                    maxDate = date;
-                if (i == listOfHistoryItems.length - 1)
-                    minDate = date;
+//                Date date = new Date(timeStamp);
+//                if (i == 0)
+//                    maxDate = date;
+//                if (i == listOfHistoryItems.length - 1)
+//                    minDate = date;
                 float value = Float.parseFloat(partsOfItem[1]);
 //                dataPoints[i] = new DataPoint(date, value);
-                if (value < minValue)
-                    minValue = value;
-                if (value > maxValue)
-                    maxValue = value;
-                dataPoints[i] = new DataPoint(date, value);
+//                if (value < minValue)
+//                    minValue = value;
+//                if (value > maxValue)
+//                    maxValue = value;
+//                dataPoints[i] = new DataPoint(date, value);
+//                dataPoints[listOfHistoryItems.length - 1 - i] = new DataPoint(listOfHistoryItems.length - 1 - i, value);
+                dataPoints.add(new Entry(timeStamp,value));
             }
-            PointsGraphSeries<DataPoint> series = new PointsGraphSeries<DataPoint>(dataPoints);
-            mGraphView.getGridLabelRenderer().setLabelFormatter(new DateAsXAxisLabelFormatter(getActivity()));
-            mGraphView.getGridLabelRenderer().setNumHorizontalLabels(4); // only 4 because of the space
+            LineDataSet dataSet = new LineDataSet(dataPoints, "DataSet 1");
+            dataSet.setAxisDependency(YAxis.AxisDependency.LEFT);
+            LineData lineData = new LineData(dataSet);
+            mGraphView.setData(lineData);
+            YAxis rightAxis = mGraphView.getAxisRight();
+            rightAxis.setEnabled(false);
+            // no description text
+            mGraphView.getDescription().setEnabled(false);
 
-            // set manual x bounds to have nice steps
-            if (null != minDate && null != maxDate) {
-                mGraphView.getViewport().setMinX(minDate.getTime());
-                mGraphView.getViewport().setMaxX(maxDate.getTime());
-            }
+            // enable touch gestures
+            mGraphView.setTouchEnabled(true);
 
-            mGraphView.getViewport().setMinY(minValue);
-            mGraphView.getViewport().setMaxY(maxValue);
+            mGraphView.setDragDecelerationFrictionCoef(0.9f);
 
-            mGraphView.getViewport().setXAxisBoundsManual(true);
+            // enable scaling and dragging
+            mGraphView.setDragEnabled(true);
+            mGraphView.setScaleEnabled(true);
 
-            // as we use dates as labels, the human rounding to nice readable numbers
-            // is not necessary
-            mGraphView.getGridLabelRenderer().setHumanRounding(false);
+            XAxis xAxis = mGraphView.getXAxis();
+            xAxis.setGranularity(1f);
+            xAxis.setValueFormatter(new IAxisValueFormatter() {
 
-            mGraphView.getViewport().setScrollable(true); // enables horizontal scrolling
-            mGraphView.addSeries(series);
+                private SimpleDateFormat mFormat = new SimpleDateFormat("dd MM yy HH:mm");
+
+                @Override
+                public String getFormattedValue(float value, AxisBase axis) {
+
+                    long millis = TimeUnit.HOURS.toMillis((long) value);
+                    return mFormat.format(new Date(millis));
+                }
+            });
+            mGraphView.invalidate();
             Log.d(TAG, historyItems);
         }
     }
