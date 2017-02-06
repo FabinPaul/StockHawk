@@ -1,6 +1,7 @@
 package com.udacity.stockhawk.ui;
 
 import android.database.Cursor;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
@@ -11,22 +12,28 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.components.AxisBase;
+import com.github.mikephil.charting.components.Legend;
 import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
 import com.github.mikephil.charting.formatter.IAxisValueFormatter;
+import com.github.mikephil.charting.utils.EntryXComparator;
 import com.udacity.stockhawk.R;
 import com.udacity.stockhawk.data.Contract;
 
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
-import java.util.concurrent.TimeUnit;
+import java.util.Locale;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -41,6 +48,17 @@ public class DetailsFragment extends Fragment implements LoaderManager.LoaderCal
 
     @BindView(R.id.stock_graph)
     LineChart mGraphView;
+
+    @BindView(R.id.stock_name)
+    TextView mStockName;
+    @BindView(R.id.absolute_change)
+    TextView mAbsoluteChange;
+    @BindView(R.id.percentage_change)
+    TextView mPercentageChange;
+    @BindView(R.id.current_price)
+    TextView mCurrentPrice;
+    @BindView(R.id.stock_exchange)
+    TextView mStockExchange;
 
     public static DetailsFragment newInstance(String pSymbol) {
         DetailsFragment fragment = new DetailsFragment();
@@ -58,6 +76,7 @@ public class DetailsFragment extends Fragment implements LoaderManager.LoaderCal
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_details, container, false);
         mUnbinder = ButterKnife.bind(this, view);
+        initGraph();
         return view;
     }
 
@@ -107,63 +126,125 @@ public class DetailsFragment extends Fragment implements LoaderManager.LoaderCal
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
         if (data != null && data.moveToFirst()) {
             String historyItems = data.getString(Contract.Quote.POSITION_HISTORY);
-            String[] listOfHistoryItems = historyItems.split("\\n");
-//            DataPoint[] dataPoints = new DataPoint[listOfHistoryItems.length];
-            ArrayList<Entry> dataPoints = new ArrayList<Entry>();
-            Date minDate = null, maxDate = null;
-            float minValue = Float.MAX_VALUE, maxValue = Float.MIN_VALUE;
-            for (int i = 0; i < listOfHistoryItems.length; i++) {
-                String partsOfItem[] = listOfHistoryItems[i].split(", ");
-                long timeStamp = Long.parseLong(partsOfItem[0]);
-//                Date date = new Date(timeStamp);
-//                if (i == 0)
-//                    maxDate = date;
-//                if (i == listOfHistoryItems.length - 1)
-//                    minDate = date;
-                float value = Float.parseFloat(partsOfItem[1]);
-//                dataPoints[i] = new DataPoint(date, value);
-//                if (value < minValue)
-//                    minValue = value;
-//                if (value > maxValue)
-//                    maxValue = value;
-//                dataPoints[i] = new DataPoint(date, value);
-//                dataPoints[listOfHistoryItems.length - 1 - i] = new DataPoint(listOfHistoryItems.length - 1 - i, value);
-                dataPoints.add(new Entry(timeStamp,value));
+            mStockName.setText(data.getString(Contract.Quote.POSITION_NAME));
+            DecimalFormat dollarFormat = (DecimalFormat) NumberFormat.getCurrencyInstance(Locale.US);
+            float rawAbsoluteChange = data.getFloat(Contract.Quote.POSITION_ABSOLUTE_CHANGE);
+            float percentageChange = data.getFloat(Contract.Quote.POSITION_PERCENTAGE_CHANGE);
+
+            if (rawAbsoluteChange > 0) {
+                mAbsoluteChange.setTextColor(getResources().getColor(android.R.color.holo_green_light));
+                mPercentageChange.setTextColor(getResources().getColor(android.R.color.holo_green_light));
+            } else {
+                mAbsoluteChange.setTextColor(getResources().getColor(android.R.color.holo_red_light));
+                mPercentageChange.setTextColor(getResources().getColor(android.R.color.holo_red_light));
             }
-            LineDataSet dataSet = new LineDataSet(dataPoints, "DataSet 1");
-            dataSet.setAxisDependency(YAxis.AxisDependency.LEFT);
-            LineData lineData = new LineData(dataSet);
-            mGraphView.setData(lineData);
-            YAxis rightAxis = mGraphView.getAxisRight();
-            rightAxis.setEnabled(false);
-            // no description text
-            mGraphView.getDescription().setEnabled(false);
 
-            // enable touch gestures
-            mGraphView.setTouchEnabled(true);
+            mCurrentPrice.setText(dollarFormat.format(data.getFloat(Contract.Quote.POSITION_PRICE)));
+            dollarFormat.setPositivePrefix("+$");
+            DecimalFormat percentFormat = (DecimalFormat) NumberFormat.getPercentInstance(Locale.US);
+            percentFormat.setMinimumFractionDigits(2);
+            percentFormat.setMaximumIntegerDigits(2);
+            percentFormat.setPositivePrefix("+");
 
-            mGraphView.setDragDecelerationFrictionCoef(0.9f);
+            String absChangeString = null;
+            String percentChangeString = null;
+            if (rawAbsoluteChange > 0) {
+                absChangeString = getString(R.string.up_arrow_value, dollarFormat.format(rawAbsoluteChange));
+                percentChangeString = getString(R.string.up_arrow_value, percentFormat.format(percentageChange));
+            } else {
+                absChangeString = getString(R.string.down_arrow_value, dollarFormat.format(rawAbsoluteChange));
+                percentChangeString = getString(R.string.down_arrow_value, percentFormat.format(percentageChange));
+            }
 
-            // enable scaling and dragging
-            mGraphView.setDragEnabled(true);
-            mGraphView.setScaleEnabled(true);
+            mAbsoluteChange.setText(absChangeString);
+            mPercentageChange.setText(percentChangeString);
 
-            XAxis xAxis = mGraphView.getXAxis();
-            xAxis.setGranularity(1f);
-            xAxis.setValueFormatter(new IAxisValueFormatter() {
+            mAbsoluteChange.setContentDescription(getString(R.string.stock_change_value, absChangeString));
+            mPercentageChange.setContentDescription(getString(R.string.stock_change_value, percentChangeString));
 
-                private SimpleDateFormat mFormat = new SimpleDateFormat("dd MM yy HH:mm");
-
-                @Override
-                public String getFormattedValue(float value, AxisBase axis) {
-
-                    long millis = TimeUnit.HOURS.toMillis((long) value);
-                    return mFormat.format(new Date(millis));
-                }
-            });
-            mGraphView.invalidate();
+            mStockExchange.setText(data.getString(Contract.Quote.POSITION_STOCK_EXCHANGE));
+            String[] listOfHistoryItems = historyItems.split("\\n");
             Log.d(TAG, historyItems);
+            loadGraph(listOfHistoryItems);
         }
+    }
+
+    private void loadGraph(String[] listOfHistoryItems) {
+        ArrayList<Entry> dataPoints = new ArrayList<Entry>();
+
+        for (int i = 0; i < listOfHistoryItems.length; i++) {
+            String partsOfItem[] = listOfHistoryItems[i].split(", ");
+            long timeStamp = Long.parseLong(partsOfItem[0]);
+            float value = Float.parseFloat(partsOfItem[1]);
+            dataPoints.add(new Entry(timeStamp, value));
+        }
+        Collections.sort(dataPoints, new EntryXComparator());
+        LineDataSet dataSet = new LineDataSet(dataPoints, "DataSet 1");
+        dataSet.setAxisDependency(YAxis.AxisDependency.LEFT);
+        dataSet.setColor(getResources().getColor(R.color.colorPrimary));
+        dataSet.setValueTextColor(getResources().getColor(R.color.colorPrimary));
+        dataSet.setDrawCircleHole(false);
+        dataSet.setLineWidth(1.5f);
+        dataSet.setDrawCircles(false);
+        LineData lineData = new LineData(dataSet);
+        mGraphView.setData(lineData);
+
+        mGraphView.invalidate();
+        // get the legend (only possible after setting data)
+        Legend l = mGraphView.getLegend();
+        l.setEnabled(false);
+
+        XAxis xAxis = mGraphView.getXAxis();
+        xAxis.setPosition(XAxis.XAxisPosition.TOP_INSIDE);
+        xAxis.setTextSize(10f);
+        xAxis.setDrawAxisLine(false);
+        xAxis.setDrawGridLines(false);
+        xAxis.setCenterAxisLabels(true);
+        xAxis.setLabelCount(3);
+        xAxis.setGranularity(1f); // one hour
+        xAxis.setValueFormatter(new IAxisValueFormatter() {
+
+            private SimpleDateFormat mFormat = new SimpleDateFormat("dd MMM yy HH:mm", Locale.US);
+
+            @Override
+            public String getFormattedValue(float value, AxisBase axis) {
+
+                //long millis = TimeUnit.HOURS.toMillis((long) value);
+                return mFormat.format(new Date((long) value));
+            }
+        });
+
+        YAxis leftAxis = mGraphView.getAxisLeft();
+        leftAxis.setPosition(YAxis.YAxisLabelPosition.INSIDE_CHART);
+        leftAxis.setDrawGridLines(true);
+        leftAxis.setGranularityEnabled(true);
+        leftAxis.setAxisMinimum(0f);
+        leftAxis.setAxisMaximum(170f);
+        leftAxis.setYOffset(-9f);
+
+        YAxis rightAxis = mGraphView.getAxisRight();
+        rightAxis.setEnabled(false);
+    }
+
+    private void initGraph() {
+        // no description text
+        mGraphView.getDescription().setEnabled(false);
+        mGraphView.setContentDescription(getString(R.string.content_description_stock_graph));
+
+        // enable touch gestures
+        mGraphView.setTouchEnabled(true);
+
+        mGraphView.setDragDecelerationFrictionCoef(0.9f);
+
+        // enable scaling and dragging
+        mGraphView.setDragEnabled(true);
+        mGraphView.setScaleEnabled(true);
+        mGraphView.setDrawGridBackground(false);
+        mGraphView.setHighlightPerDragEnabled(true);
+
+        // set an alternative background color
+        mGraphView.setBackgroundColor(Color.WHITE);
+        mGraphView.setViewPortOffsets(0f, 0f, 0f, 0f);
     }
 
     @Override
