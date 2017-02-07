@@ -150,10 +150,10 @@ public class DetailsFragment extends Fragment implements LoaderManager.LoaderCal
             String percentChangeString = null;
             if (rawAbsoluteChange > 0) {
                 absChangeString = getString(R.string.up_arrow_value, dollarFormat.format(rawAbsoluteChange));
-                percentChangeString = getString(R.string.up_arrow_value, percentFormat.format(percentageChange));
+                percentChangeString = getString(R.string.up_arrow_value, percentFormat.format(percentageChange / 100));
             } else {
                 absChangeString = getString(R.string.down_arrow_value, dollarFormat.format(rawAbsoluteChange));
-                percentChangeString = getString(R.string.down_arrow_value, percentFormat.format(percentageChange));
+                percentChangeString = getString(R.string.down_arrow_value, percentFormat.format(percentageChange / 100));
             }
 
             mAbsoluteChange.setText(absChangeString);

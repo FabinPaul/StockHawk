@@ -53,5 +53,6 @@
     <string name="down_arrow_value">%s \u2193</string>
     <string name="stock_change_value">%s increased in stock value</string>
     <string name="empty_stock_list">No Stock Information Available</string>
+    <string name="title_widget_detail">Stock Details</string>
 
 </resources>

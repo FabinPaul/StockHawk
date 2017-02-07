@@ -20,6 +20,7 @@
     <style name="StockSymbolTextStyle">
         <item name="android:textSize">18sp</item>
         <item name="android:textAllCaps">true</item>
+        <item name="android:textColor">@android:color/darker_gray</item>
     </style>
 
     <style name="StockNameTextStyle">
