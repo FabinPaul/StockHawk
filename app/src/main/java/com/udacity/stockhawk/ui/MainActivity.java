@@ -75,9 +75,9 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     };
 
     @Override
-    public void onClick(String symbol) {
+    public void onClick(String symbol, String stockExchange, View transitionView) {
         Timber.d("Symbol clicked: %s", symbol);
-        DetailsActivity.startActivity(this, symbol);
+        DetailsActivity.startActivity(this, symbol, stockExchange, transitionView);
     }
 
     @Override

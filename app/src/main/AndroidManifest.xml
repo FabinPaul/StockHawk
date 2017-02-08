@@ -15,7 +15,9 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:ignore="GoogleAppIndexingWarning">
-        <activity android:name=".ui.MainActivity">
+        <activity
+            android:name=".ui.MainActivity"
+            android:theme="@style/AppTheme.Main">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
 
@@ -42,27 +44,28 @@
             android:name=".ui.DetailsActivity"
             android:label="@string/title_activity_details"
             android:parentActivityName=".ui.MainActivity"
-            android:theme="@style/AppTheme">
+            android:theme="@style/AppTheme.Details">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.udacity.stockhawk.ui.MainActivity"/>
         </activity>
         <receiver
             android:name=".widget.StockWidgetProvider"
-            android:label="@string/title_widget_detail"
-            android:enabled="true" >
+            android:enabled="true"
+            android:label="@string/title_widget_detail">
             <intent-filter>
-                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-                <action android:name="com.udacity.stockhawk.ACTION_DATA_SYNC" />
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE"/>
+                <action android:name="com.udacity.stockhawk.ACTION_DATA_SYNC"/>
             </intent-filter>
-            <meta-data android:name="android.appwidget.provider"
-                       android:resource="@xml/widget_stocks" />
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_stocks"/>
         </receiver>
         <service
             android:name=".widget.StockRemoteViewsService"
             android:enabled="true"
             android:exported="false"
-            android:permission="android.permission.BIND_REMOTEVIEWS" />
+            android:permission="android.permission.BIND_REMOTEVIEWS"/>
     </application>
 
 </manifest>

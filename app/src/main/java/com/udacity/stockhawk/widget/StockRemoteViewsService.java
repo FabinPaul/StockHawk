@@ -71,6 +71,7 @@ public class StockRemoteViewsService extends RemoteViewsService {
                 percentFormat.setPositivePrefix("+");
                 String symbol = mData.getString(Contract.Quote.POSITION_SYMBOL);
                 view.setTextViewText(R.id.symbol, symbol);
+                String stockExchange = mData.getString(Contract.Quote.POSITION_STOCK_EXCHANGE);
                 float price = mData.getFloat(Contract.Quote.POSITION_PRICE);
                 view.setTextViewText(R.id.price, dollarFormat.format(price));
                 dollarFormat.setPositivePrefix("+$");
@@ -98,6 +99,8 @@ public class StockRemoteViewsService extends RemoteViewsService {
                 final Bundle bundle = new Bundle();
                 bundle.putString(DetailsActivity.INTENT_EXTRA_SYMBOL,
                         symbol);
+                bundle.putString(DetailsActivity.INTENT_EXTRA_STOCK_EXCHANGE,
+                        stockExchange);
                 fillInIntent.putExtras(bundle);
                 view.setOnClickFillInIntent(R.id.widget_list_item, fillInIntent);
                 return view;
