@@ -12,4 +12,5 @@
     <dimen name="widget_detail_min_resize_width">220dp</dimen>
     <dimen name="widget_detail_min_resize_height">@dimen/widget_detail_default_height</dimen>
     <dimen name="dimen_8">8dp</dimen>
+    <dimen name="stock_detail_horizontal_padding_land">16dp</dimen>
 </resources>

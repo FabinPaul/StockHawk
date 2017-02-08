@@ -13,7 +13,6 @@ import android.text.TextUtils;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.udacity.stockhawk.R;
 
@@ -43,8 +42,6 @@ public class DetailsActivity extends AppCompatActivity {
                     .beginTransaction()
                     .add(R.id.detail_frag_container, fragment)
                     .commit();
-        } else {
-            Toast.makeText(this, "Symbol not found", Toast.LENGTH_SHORT).show();
         }
     }
 
